@@ -1,24 +1,55 @@
+from pkgutil import iter_modules
+
 import ast
 import sys
-import pkgutil
-
-all_modules = [module.name for module in pkgutil.iter_modules()]
+import argparse
+import subprocess
 
 class FindImports(ast.NodeVisitor):
     
     def __init__(self):
-        self.module = set()
+        self.modules = set()
+        self._all_modules = [module.name for module in iter_modules()] + \
+                list(sys.modules.keys())
 
     def visit_ImportFrom(self, node):
-        if node.module not in all_modules:
-            self.module.add(node.module.split('.')[0])
-
+        module_name = node.module.split('.')[0]
+        if module_name not in self._all_modules:
+            self.modules.add(module_name)
+        
     def visit_Import(self, node):
         for child in ast.walk(node):
             if isinstance(child, ast.alias):
-                if child.name not in all_modules:
-                    self.module.add(child.name)
+                if child.name not in self._all_modules:
+                    self.modules.add(child.name)
 
+
+
+def install(imported_modules):
+    try:
+        subprocess.run([sys.executable, '-m', 'pip', 'install'] + list(imported_modules))
+    except subprocess.CalledProcessError as err:
+        print('Error: ', err)
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Install dependencies of a python script.')
+    parser.add_argument(dest='script_name', metavar='filename')
+    args = parser.parse_args()
+    
+    tree = ast.parse(open(args.script_name).read())
+    imported = FindImports()
+    imported.visit(tree)
+    
+    while True:
+        user_choice = input('Installing ' +  ', '.join(imported.modules) + '\n Proceed (y/n)? ')
+        if user_choice.isalpha():
+            if user_choice.lower() == 'y':
+                install(imported.modules)
+                break
+            elif user_choice.lower() == 'n':
+                break
 
 
 
