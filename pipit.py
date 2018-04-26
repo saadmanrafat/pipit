@@ -6,7 +6,6 @@ import argparse
 import subprocess
 
 class FindImports(ast.NodeVisitor):
-    
     def __init__(self):
         self.modules = set()
         self._all_modules = [module.name for module in iter_modules()] + \
@@ -22,9 +21,8 @@ class FindImports(ast.NodeVisitor):
             if isinstance(child, ast.alias):
                 if child.name not in self._all_modules:
                     self.modules.add(child.name)
-
-
-
+                    
+                    
 def install(imported_modules):
     try:
         subprocess.run([sys.executable, '-m', 'pip', 'install'] + list(imported_modules))
@@ -33,7 +31,6 @@ def install(imported_modules):
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser(description='Install dependencies of a python script.')
     parser.add_argument(dest='script_name', metavar='filename')
     args = parser.parse_args()
@@ -50,6 +47,5 @@ if __name__ == '__main__':
                 break
             elif user_choice.lower() == 'n':
                 break
-
-
-
+                
+                
