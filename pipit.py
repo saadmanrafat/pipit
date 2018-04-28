@@ -8,7 +8,7 @@ import subprocess
 class FindImports(ast.NodeVisitor):
     def __init__(self):
         self.modules = set()
-        self._all_modules = [module.name for module in iter_modules()] + \
+        self._all_modules = [module.name for module in iter_modules(path=['.']+sys.path)] + \
                 list(sys.modules.keys())
 
     def visit_ImportFrom(self, node):
@@ -30,7 +30,7 @@ def install(imported_modules):
         print('Error: ', err)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='Install dependencies of a python script.')
     parser.add_argument(dest='script_name', metavar='filename')
     args = parser.parse_args()
@@ -39,13 +39,18 @@ if __name__ == '__main__':
     imported = FindImports()
     imported.visit(tree)
     
-    while True:
-        user_choice = input('Installing ' +  ', '.join(imported.modules) + '\n Proceed (y/n)? ')
-        if user_choice.isalpha():
-            if user_choice.lower() == 'y':
-                install(imported.modules)
-                break
-            elif user_choice.lower() == 'n':
-                break
-                
-                
+    if not imported.modules:
+        print('No new dependencies found.')
+    else:
+        while True:
+            user_choice = input('Installing ' +  ', '.join(imported.modules) + '\n Proceed (y/n)? ')
+            if user_choice.isalpha():
+                if user_choice.lower() == 'y':
+                    install(imported.modules)
+                    break
+                elif user_choice.lower() == 'n':
+                    break
+
+
+if __name__ == '__main__':
+    main()
