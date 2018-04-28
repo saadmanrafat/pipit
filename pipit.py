@@ -51,6 +51,3 @@ def main():
                 elif user_choice.lower() == 'n':
                     break
 
-
-if __name__ == '__main__':
-    main()
