@@ -1,3 +1,6 @@
 testfile.py
 *~
+*.egg-info
+env
+*.swp
 
